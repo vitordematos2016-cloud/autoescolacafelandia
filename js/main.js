@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   gsap.from(".hero-visual .scene", { scale: 0.9, opacity: 0, duration: 1.5, ease: "power2.out", delay: 0.5 });
 
   // Fade-up for sections
-  gsap.utils.toArray(".section:not(.services-section):not(.reviews-section), .cta-band").forEach(section => {
+  gsap.utils.toArray(".section:not(.services-section):not(.reviews-section):not(.location-section):not(.faq-section)").forEach(section => {
     const sectionContent = section.querySelector(':scope > .container') || section;
     gsap.from(sectionContent, {
       scrollTrigger: {
@@ -50,6 +50,19 @@ document.addEventListener("DOMContentLoaded", () => {
       ease: "power3.out"
     });
   });
+
+  const locationSection = document.querySelector('.location-section');
+  if (locationSection && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const locationTimeline = gsap.timeline({
+      scrollTrigger: { trigger: locationSection, start: 'top 78%', once: true },
+      defaults: { duration: .72, ease: 'power2.out', clearProps: 'transform,opacity' }
+    });
+    locationTimeline
+      .from('.location-heading', { y: 24, opacity: 0 })
+      .from('.location-contact-card', { x: -24, opacity: 0 }, '-=.42')
+      .from('.location-map', { opacity: 0 }, '-=.52')
+      .from('.location-microcard', { y: 18, opacity: 0, stagger: .1 }, '-=.3');
+  }
   
   // Stagger cards
   gsap.from(".card, .difference-item", {
@@ -64,30 +77,25 @@ document.addEventListener("DOMContentLoaded", () => {
     ease: "power2.out"
   });
 
-  // Stagger FAQ
-  gsap.from(".faq-item", {
-    scrollTrigger: {
-      trigger: ".faq-list",
-      start: "top 86%",
-      once: true
-    },
-    y: 58,
-    scale: 0.94,
-    opacity: 0,
-    duration: 0.82,
-    stagger: 0.11,
-    ease: "bounce.out",
-    clearProps: "transform,opacity"
-  });
-
-  if (window.matchMedia('(hover:hover)').matches) {
-    document.querySelectorAll('.faq-item').forEach(item => {
-      item.addEventListener('mouseenter', () => {
-        gsap.to(item, { y: -9, scale: 1.01, duration: .34, ease: 'back.out(2.5)', overwrite: 'auto' });
-      });
-      item.addEventListener('mouseleave', () => {
-        gsap.to(item, { y: 0, scale: 1, duration: .28, ease: 'power2.out', overwrite: 'auto', clearProps: 'transform' });
-      });
+  const faqSection = document.querySelector('.faq-section');
+  const faqCta = document.querySelector('.cta-band');
+  if (faqSection && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const faqTimeline = gsap.timeline({
+      scrollTrigger: { trigger: faqSection, start: 'top 80%', once: true },
+      defaults: { duration: .62, ease: 'power2.out', clearProps: 'transform,opacity' }
+    });
+    faqTimeline
+      .from('.faq-intro', { y: 22, opacity: 0 })
+      .from('.faq-item', { y: 18, opacity: 0, stagger: .08 }, '-=.38');
+  }
+  if (faqCta && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    gsap.from('.cta-box', {
+      scrollTrigger: { trigger: faqCta, start: 'top 88%', once: true },
+      y: 22,
+      opacity: 0,
+      duration: .68,
+      ease: 'power2.out',
+      clearProps: 'transform,opacity'
     });
   }
 
@@ -197,31 +205,18 @@ const reviewsNext = document.querySelector('.reviews-next');
 const reviewCards = reviewsTrack ? [...reviewsTrack.querySelectorAll('.review-card')] : [];
 const reviewIndicators = document.querySelector('.reviews-indicators');
 const reviewModal = document.querySelector('.review-modal');
-const approvedCategoryCards = [...document.querySelectorAll('.approved-category-card')];
-const approvedSelectorButtons = [...document.querySelectorAll('[data-approved-select]')];
-const approvedCardsGrid = document.querySelector('.approved-cards-grid');
-const approvedLightbox = document.querySelector('.approved-lightbox');
 const reduceReviewMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let reviewIndex = 0;
-let reviewLoopWidth = 0;
-let reviewStepSize = 0;
-let reviewLoopFrame = null;
-let reviewLastFrame = 0;
-let reviewAutoPosition = 0;
 let reviewScrollFrame = null;
 let reviewLastTrigger = null;
-let reviewHovered = false;
-let reviewFocused = false;
-let reviewTouching = false;
-let reviewManualPauseUntil = 0;
-let reviewUsingSubpixel = false;
-let approvedTouchStart = 0;
-let approvedLastTrigger = null;
-let approvedLightboxState = null;
-let approvedGridTouchStart = 0;
-let approvedRotationTimer = null;
-let approvedRotationCursor = 0;
-const approvedRotationDelay = 2000;
+let reviewPointerStartX = 0;
+let reviewPointerStartScroll = 0;
+let reviewPointerMoved = false;
+let reviewDragging = false;
+let reviewLoopWidth = 0;
+let reviewLoopFrame = null;
+let reviewLoopLastTime = 0;
+let reviewAutoPauseUntil = 0;
 
 const reviewCardStep = () => {
   const firstCard = reviewCards[0];
@@ -252,8 +247,7 @@ const updateReviewControls = () => {
 
 const markActiveReview = index => {
   if (!reviewCards.length) return;
-  const normalizedIndex = (index + reviewCards.length) % reviewCards.length;
-  if (normalizedIndex === reviewIndex) return;
+  const normalizedIndex = (index % reviewCards.length + reviewCards.length) % reviewCards.length;
   reviewIndex = normalizedIndex;
   [...(reviewIndicators?.children || [])].forEach((indicator, index) => {
     const isActive = index === reviewIndex;
@@ -262,17 +256,15 @@ const markActiveReview = index => {
   });
 };
 
-const clearReviewSubpixelOffset = () => {
-  if (!reviewsTrack || !reviewUsingSubpixel) return;
-  reviewsTrack.scrollLeft = Math.round(reviewAutoPosition);
-  reviewsTrack.style.removeProperty('--review-subpixel');
-  reviewAutoPosition = reviewsTrack.scrollLeft;
-  reviewUsingSubpixel = false;
+const syncReviewFromScroll = () => {
+  const step = reviewCardStep();
+  if (!reviewsTrack || !step || !reviewCards.length) return;
+  const position = reviewLoopWidth ? reviewsTrack.scrollLeft % reviewLoopWidth : reviewsTrack.scrollLeft;
+  markActiveReview(Math.round(position / step));
 };
 
-const pauseReviewsTemporarily = (duration = 2400) => {
-  clearReviewSubpixelOffset();
-  reviewManualPauseUntil = performance.now() + duration;
+const pauseReviewAutoLoop = (duration = 1300) => {
+  reviewAutoPauseUntil = performance.now() + duration;
 };
 
 const measureReviewLoop = () => {
@@ -281,73 +273,49 @@ const measureReviewLoop = () => {
   const firstClone = reviewsTrack.children[reviewCards.length];
   if (!firstCard || !firstClone) return;
   reviewLoopWidth = firstClone.offsetLeft - firstCard.offsetLeft;
-  reviewStepSize = reviewCardStep();
   if (reviewLoopWidth && reviewsTrack.scrollLeft >= reviewLoopWidth) {
     reviewsTrack.scrollLeft %= reviewLoopWidth;
   }
-  reviewAutoPosition = reviewsTrack.scrollLeft;
-};
-
-const normalizeReviewLoop = () => {
-  if (!reviewsTrack || !reviewLoopWidth) return;
-  if (reviewsTrack.scrollLeft >= reviewLoopWidth) reviewsTrack.scrollLeft %= reviewLoopWidth;
-  reviewAutoPosition = reviewsTrack.scrollLeft;
-};
-
-const syncReviewFromScroll = () => {
-  const step = reviewStepSize || reviewCardStep();
-  if (!reviewsTrack || !step || !reviewCards.length) return;
-  const position = reviewLoopWidth ? reviewsTrack.scrollLeft % reviewLoopWidth : reviewsTrack.scrollLeft;
-  markActiveReview(Math.round(position / step));
 };
 
 const moveReviews = direction => {
-  if (!reviewsTrack || !reviewLoopWidth) return;
-  const step = reviewCardStep();
-  pauseReviewsTemporarily(2800);
-  if (direction < 0 && reviewsTrack.scrollLeft < step * .55) {
+  if (!reviewsTrack || reviewCards.length < 2) return;
+  pauseReviewAutoLoop();
+  if (direction > 0 && reviewIndex === reviewCards.length - 1 && reviewLoopWidth) {
+    markActiveReview(0);
+    reviewsTrack.scrollTo({ left: reviewLoopWidth, behavior: reduceReviewMotion ? 'auto' : 'smooth' });
+    window.setTimeout(() => { reviewsTrack.scrollLeft = 0; }, reduceReviewMotion ? 0 : 760);
+    return;
+  }
+  if (direction < 0 && reviewIndex === 0 && reviewLoopWidth) {
     reviewsTrack.scrollLeft += reviewLoopWidth;
   }
-  const target = reviewsTrack.scrollLeft + step * direction;
-  reviewsTrack.scrollTo({ left: target, behavior: reduceReviewMotion ? 'auto' : 'smooth' });
-  window.setTimeout(() => {
-    normalizeReviewLoop();
-    syncReviewFromScroll();
-  }, reduceReviewMotion ? 0 : 760);
+  const nextIndex = (reviewIndex + direction + reviewCards.length) % reviewCards.length;
+  goToReview(nextIndex);
 };
 
 const goToReview = index => {
-  if (!reviewsTrack || !reviewLoopWidth) return;
-  pauseReviewsTemporarily(2800);
+  if (!reviewsTrack || !reviewCards.length) return;
+  pauseReviewAutoLoop();
   const step = reviewCardStep();
-  const target = index * step;
-  markActiveReview(index);
-  reviewsTrack.scrollTo({ left: target, behavior: reduceReviewMotion ? 'auto' : 'smooth' });
-  window.setTimeout(() => {
-    reviewAutoPosition = reviewsTrack.scrollLeft;
-    syncReviewFromScroll();
-  }, reduceReviewMotion ? 0 : 760);
+  const nextIndex = (index % reviewCards.length + reviewCards.length) % reviewCards.length;
+  markActiveReview(nextIndex);
+  reviewsTrack.scrollTo({ left: nextIndex * step, behavior: reduceReviewMotion ? 'auto' : 'smooth' });
 };
 
-const animateReviews = time => {
+const animateReviewLoop = time => {
   if (!reviewsTrack) return;
-  const elapsed = Math.min(time - (reviewLastFrame || time), 40);
+  const elapsed = Math.min(time - (reviewLoopLastTime || time), 40);
   const modalIsOpen = reviewModal && !reviewModal.hidden;
-  const isPaused = reduceReviewMotion || reviewHovered || reviewFocused || reviewTouching || modalIsOpen || time < reviewManualPauseUntil || document.hidden;
-  if (!isPaused && reviewLoopWidth) {
-    reviewAutoPosition += elapsed * .04;
-    if (reviewAutoPosition >= reviewLoopWidth) reviewAutoPosition -= reviewLoopWidth;
-    const integerPosition = Math.floor(reviewAutoPosition);
-    reviewsTrack.scrollLeft = integerPosition;
-    reviewsTrack.style.setProperty('--review-subpixel', `${integerPosition - reviewAutoPosition}px`);
-    reviewUsingSubpixel = true;
-    if (reviewStepSize) markActiveReview(Math.round(reviewAutoPosition / reviewStepSize));
-  } else {
-    clearReviewSubpixelOffset();
-    reviewAutoPosition = reviewsTrack.scrollLeft;
+  const canMove = !reduceReviewMotion && !reviewDragging && !modalIsOpen && !document.hidden && time >= reviewAutoPauseUntil && reviewLoopWidth;
+
+  if (canMove) {
+    reviewsTrack.scrollLeft += elapsed * .035;
+    if (reviewsTrack.scrollLeft >= reviewLoopWidth) reviewsTrack.scrollLeft -= reviewLoopWidth;
   }
-  reviewLastFrame = time;
-  reviewLoopFrame = window.requestAnimationFrame(animateReviews);
+
+  reviewLoopLastTime = time;
+  reviewLoopFrame = window.requestAnimationFrame(animateReviewLoop);
 };
 
 const openReviewModal = card => {
@@ -374,231 +342,65 @@ const closeReviewModal = () => {
 reviewModal?.querySelector('.review-modal-close')?.addEventListener('click', closeReviewModal);
 reviewModal?.querySelector('.review-modal-backdrop')?.addEventListener('click', closeReviewModal);
 
-const approvedStudentPhotos = {
-  A: ['esquerda', 'direita', 'esquerda', 'esquerda', 'direita', 'esquerda', 'direita', 'esquerda', 'direita', 'direita']
-    .map((side, index) => `./assets/cnh%20a/aprovado_lote2_${String(index + 1).padStart(2, '0')}_${side}.png`),
-  B: ['esquerda', 'direita', 'esquerda', 'direita', 'esquerda', 'direita', 'esquerda', 'direita', 'esquerda', 'direita', 'esquerda', 'direita', 'esquerda', 'direita', 'direita', 'esquerda', 'direita', 'esquerda', 'direita']
-    .map((side, index) => `./assets/cnh%20b/aprovado_${String(index + 1).padStart(2, '0')}_${side}.png`),
-  D: Array.from({ length: 19 }, (_, index) => `./assets/cnh%20d/aprovado_onibus_${String(index + 1).padStart(3, '0')}.png`)
-};
-
-const preloadApprovedPhoto = source => {
-  if (!source) return;
-  const image = new Image();
-  image.decoding = 'async';
-  image.src = source;
-};
-
-const updateApprovedCardUI = state => {
-  state.dots.forEach((dot, index) => dot.classList.toggle('is-active', index === state.index % state.dots.length));
-};
-
-const clearApprovedRotation = () => {
-  window.clearTimeout(approvedRotationTimer);
-  approvedRotationTimer = null;
-};
-
-const scheduleApprovedSequence = (delay = approvedRotationDelay) => {
-  clearApprovedRotation();
-  if (reduceReviewMotion || !approvedStates.length) return;
-  approvedRotationTimer = window.setTimeout(async () => {
-    const state = approvedStates[approvedRotationCursor];
-    if (!state || state.hovered || state.transitioning || document.hidden || (approvedLightbox && !approvedLightbox.hidden)) {
-      scheduleApprovedSequence(600);
-      return;
-    }
-    await showApprovedPhoto(state, state.index + 1);
-    approvedRotationCursor = (approvedRotationCursor + 1) % approvedStates.length;
-    scheduleApprovedSequence();
-  }, delay);
-};
-
-const showApprovedPhoto = async (state, targetIndex) => {
-  if (!state || state.transitioning || !state.photos.length) return false;
-  const nextIndex = (targetIndex + state.photos.length) % state.photos.length;
-  if (nextIndex === state.index) return false;
-  state.transitioning = true;
-  const currentLayer = state.layers[state.activeLayer];
-  const nextLayerIndex = state.activeLayer === 0 ? 1 : 0;
-  const nextLayer = state.layers[nextLayerIndex];
-  nextLayer.src = state.photos[nextIndex];
-  nextLayer.alt = `Aluno aprovado - Categoria ${state.category}`;
-  try {
-    if (!nextLayer.complete) await new Promise((resolve, reject) => {
-      nextLayer.addEventListener('load', resolve, { once: true });
-      nextLayer.addEventListener('error', reject, { once: true });
-    });
-    await nextLayer.decode().catch(() => {});
-  } catch {
-    state.transitioning = false;
-    return false;
-  }
-  nextLayer.classList.add('is-active');
-  currentLayer.classList.remove('is-active');
-  state.activeLayer = nextLayerIndex;
-  state.index = nextIndex;
-  updateApprovedCardUI(state);
-  window.setTimeout(() => {
-    if (!currentLayer.classList.contains('is-active')) currentLayer.removeAttribute('src');
-    state.transitioning = false;
-  }, reduceReviewMotion ? 0 : 800);
-  preloadApprovedPhoto(state.photos[(state.index + 1) % state.photos.length]);
-  preloadApprovedPhoto(state.photos[(state.index - 1 + state.photos.length) % state.photos.length]);
-  return true;
-};
-
-const approvedStates = approvedCategoryCards.map((card, categoryIndex) => {
-  const category = card.dataset.approvedCategory;
-  const state = {
-    card,
-    category,
-    photos: approvedStudentPhotos[category] || [],
-    layers: [...card.querySelectorAll('.approved-photo-layer')],
-    dots: [...card.querySelectorAll('.approved-card-dots i')],
-    index: 0,
-    activeLayer: 0,
-    transitioning: false,
-    hovered: false
-  };
-  updateApprovedCardUI(state);
-  preloadApprovedPhoto(state.photos[1]);
-  card.addEventListener('mouseenter', () => {
-    state.hovered = true;
-    clearApprovedRotation();
-  });
-  card.addEventListener('mouseleave', () => {
-    state.hovered = false;
-    scheduleApprovedSequence();
-  });
-  const changeManually = async direction => {
-    clearApprovedRotation();
-    await showApprovedPhoto(state, state.index + direction);
-    approvedRotationCursor = (categoryIndex + 1) % approvedCategoryCards.length;
-    scheduleApprovedSequence();
-  };
-  card.querySelector('.approved-card-prev')?.addEventListener('click', () => changeManually(-1));
-  card.querySelector('.approved-card-next')?.addEventListener('click', () => changeManually(1));
-  card.querySelector('.approved-photo-open')?.addEventListener('click', event => openApprovedLightbox(state, event.currentTarget));
-  return state;
-});
-
-scheduleApprovedSequence();
-
-const renderApprovedLightbox = () => {
-  if (!approvedLightbox || !approvedLightboxState) return;
-  const { state, index } = approvedLightboxState;
-  const target = approvedLightbox.querySelector('img');
-  target.src = state.photos[index];
-  target.alt = `Aluno aprovado - Categoria ${state.category}`;
-  approvedLightbox.querySelector('.approved-lightbox-category').textContent = `Categoria ${state.category}`;
-  preloadApprovedPhoto(state.photos[(index + 1) % state.photos.length]);
-  preloadApprovedPhoto(state.photos[(index - 1 + state.photos.length) % state.photos.length]);
-};
-
-const openApprovedLightbox = (state, trigger) => {
-  if (!approvedLightbox || !state?.photos.length) return;
-  approvedLastTrigger = trigger || document.activeElement;
-  approvedLightboxState = { state, index: state.index };
-  clearApprovedRotation();
-  renderApprovedLightbox();
-  approvedLightbox.hidden = false;
-  document.body.classList.add('has-approved-lightbox');
-  approvedLightbox.querySelector('.approved-lightbox-close')?.focus();
-};
-
-const closeApprovedLightbox = () => {
-  if (!approvedLightbox || approvedLightbox.hidden) return;
-  const selected = approvedLightboxState;
-  approvedLightbox.hidden = true;
-  document.body.classList.remove('has-approved-lightbox');
-  if (selected) {
-    showApprovedPhoto(selected.state, selected.index);
-    approvedRotationCursor = (approvedStates.indexOf(selected.state) + 1) % approvedStates.length;
-  }
-  approvedLightboxState = null;
-  scheduleApprovedSequence();
-  approvedLastTrigger?.focus();
-};
-
-const moveApprovedLightbox = direction => {
-  if (!approvedLightboxState) return;
-  const total = approvedLightboxState.state.photos.length;
-  approvedLightboxState.index = (approvedLightboxState.index + direction + total) % total;
-  renderApprovedLightbox();
-};
-
-const selectApprovedCategory = category => {
-  approvedSelectorButtons.forEach(button => {
-    const isActive = button.dataset.approvedSelect === category;
-    button.classList.toggle('is-active', isActive);
-    button.setAttribute('aria-pressed', String(isActive));
-  });
-  approvedCategoryCards.forEach(card => card.classList.toggle('is-mobile-active', card.dataset.approvedCategory === category));
-};
-
-approvedSelectorButtons.forEach(button => button.addEventListener('click', () => selectApprovedCategory(button.dataset.approvedSelect)));
-approvedCardsGrid?.addEventListener('touchstart', event => { approvedGridTouchStart = event.changedTouches[0].clientX; }, { passive: true });
-approvedCardsGrid?.addEventListener('touchend', event => {
-  const distance = event.changedTouches[0].clientX - approvedGridTouchStart;
-  if (Math.abs(distance) < 48 || window.innerWidth > 640) return;
-  const categories = approvedStates.map(state => state.category);
-  const activeCategory = approvedCategoryCards.find(card => card.classList.contains('is-mobile-active'))?.dataset.approvedCategory || categories[0];
-  const currentIndex = categories.indexOf(activeCategory);
-  selectApprovedCategory(categories[(currentIndex + (distance < 0 ? 1 : -1) + categories.length) % categories.length]);
-}, { passive: true });
-
-approvedLightbox?.querySelector('.approved-lightbox-close')?.addEventListener('click', closeApprovedLightbox);
-approvedLightbox?.querySelector('.approved-lightbox-backdrop')?.addEventListener('click', closeApprovedLightbox);
-approvedLightbox?.querySelector('.approved-lightbox-prev')?.addEventListener('click', () => moveApprovedLightbox(-1));
-approvedLightbox?.querySelector('.approved-lightbox-next')?.addEventListener('click', () => moveApprovedLightbox(1));
-approvedLightbox?.addEventListener('touchstart', event => { approvedTouchStart = event.changedTouches[0].clientX; }, { passive: true });
-approvedLightbox?.addEventListener('touchend', event => {
-  const distance = event.changedTouches[0].clientX - approvedTouchStart;
-  if (Math.abs(distance) > 45) moveApprovedLightbox(distance > 0 ? -1 : 1);
-}, { passive: true });
-document.addEventListener('visibilitychange', () => {
-  clearApprovedRotation();
-  if (!document.hidden) scheduleApprovedSequence();
-});
-
 if (reviewsTrack && reviewCards.length > 1) {
   reviewCards.forEach(card => {
     const clone = card.cloneNode(true);
     clone.classList.add('review-card-clone');
     clone.setAttribute('aria-hidden', 'true');
-    clone.querySelectorAll('button, a').forEach(control => control.setAttribute('tabindex', '-1'));
+    clone.setAttribute('tabindex', '-1');
     reviewsTrack.appendChild(clone);
   });
   reviewsTrack.classList.add('is-looping');
 
   reviewsTrack.addEventListener('click', event => {
-    const button = event.target.closest('.review-read-more');
-    if (button) openReviewModal(button.closest('.review-card'));
+    const card = event.target.closest('.review-card');
+    if (card && !reviewPointerMoved) openReviewModal(card);
   });
   reviewsTrack.addEventListener('scroll', () => {
-    const isManualScroll = reviewHovered || reviewFocused || reviewTouching || performance.now() < reviewManualPauseUntil;
-    if (!isManualScroll) return;
     window.cancelAnimationFrame(reviewScrollFrame);
     reviewScrollFrame = window.requestAnimationFrame(syncReviewFromScroll);
   }, { passive: true });
-  reviewsTrack.addEventListener('mouseenter', () => { reviewHovered = true; });
-  reviewsTrack.addEventListener('mouseleave', () => { reviewHovered = false; });
-  reviewsTrack.addEventListener('focusin', () => { reviewFocused = true; });
-  reviewsTrack.addEventListener('focusout', event => { reviewFocused = reviewsTrack.contains(event.relatedTarget); });
   reviewsTrack.addEventListener('pointerdown', event => {
-    if (event.pointerType !== 'mouse') reviewTouching = true;
-    pauseReviewsTemporarily();
-  }, { passive: true });
-  reviewsTrack.addEventListener('pointerup', () => {
-    reviewTouching = false;
-    pauseReviewsTemporarily();
-  }, { passive: true });
-  reviewsTrack.addEventListener('pointercancel', () => { reviewTouching = false; }, { passive: true });
-  reviewsTrack.addEventListener('wheel', () => pauseReviewsTemporarily(), { passive: true });
+    if (event.button !== 0) return;
+    pauseReviewAutoLoop();
+    reviewDragging = true;
+    reviewPointerMoved = false;
+    reviewPointerStartX = event.clientX;
+    reviewPointerStartScroll = reviewsTrack.scrollLeft;
+    reviewsTrack.classList.add('is-dragging');
+    reviewsTrack.setPointerCapture?.(event.pointerId);
+  });
+  reviewsTrack.addEventListener('pointermove', event => {
+    if (!reviewDragging) return;
+    const distance = event.clientX - reviewPointerStartX;
+    if (Math.abs(distance) > 6) reviewPointerMoved = true;
+    if (!reviewPointerMoved) return;
+    event.preventDefault();
+    reviewsTrack.scrollLeft = reviewPointerStartScroll - distance;
+  });
+  const finishReviewDrag = event => {
+    if (!reviewDragging) return;
+    reviewDragging = false;
+    reviewsTrack.classList.remove('is-dragging');
+    if (event?.pointerId !== undefined) reviewsTrack.releasePointerCapture?.(event.pointerId);
+    if (reviewPointerMoved) {
+      if (reviewLoopWidth) reviewsTrack.scrollLeft %= reviewLoopWidth;
+      goToReview(Math.round(reviewsTrack.scrollLeft / reviewCardStep()));
+      window.setTimeout(() => { reviewPointerMoved = false; }, 0);
+    }
+  };
+  reviewsTrack.addEventListener('pointerup', finishReviewDrag);
+  reviewsTrack.addEventListener('pointercancel', finishReviewDrag);
+  reviewCards.forEach(card => card.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    openReviewModal(card);
+  }));
+  reviewsTrack.addEventListener('wheel', () => pauseReviewAutoLoop(), { passive: true });
 
   window.requestAnimationFrame(() => {
     measureReviewLoop();
-    reviewLoopFrame = window.requestAnimationFrame(animateReviews);
+    reviewLoopFrame = window.requestAnimationFrame(animateReviewLoop);
   });
 }
 
@@ -607,14 +409,22 @@ reviewsNext?.addEventListener('click', () => moveReviews(1));
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
     closeReviewModal();
-    closeApprovedLightbox();
   }
-  if (approvedLightbox && !approvedLightbox.hidden && event.key === 'ArrowLeft') moveApprovedLightbox(-1);
-  if (approvedLightbox && !approvedLightbox.hidden && event.key === 'ArrowRight') moveApprovedLightbox(1);
+  if (reviewsTrack?.contains(document.activeElement) && event.key === 'ArrowLeft') {
+    event.preventDefault();
+    moveReviews(-1);
+  }
+  if (reviewsTrack?.contains(document.activeElement) && event.key === 'ArrowRight') {
+    event.preventDefault();
+    moveReviews(1);
+  }
 });
 window.addEventListener('resize', () => {
-  measureReviewLoop();
-  syncReviewFromScroll();
+  updateReviewControls();
+  window.requestAnimationFrame(() => {
+    measureReviewLoop();
+    if (reviewsTrack) reviewsTrack.scrollLeft = reviewIndex * reviewCardStep();
+  });
 });
 updateReviewControls();
 

@@ -6,16 +6,19 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Baixar projeto
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Publicar na Hostinger via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
@@ -29,3 +32,17 @@ jobs:
             **/.git*/**
             **/.github/**
             **/.tmp/**
+            **/.env
+            **/.env.*
+            **/*.key
+            **/*.pem
+            **/credentials*
+            **/secrets*
+            **/*.bak
+            **/*.old
+            **/*.tmp
+            **/*.md
+            **/README*
+            **/architecture/**
+            **/*luhlana*
+            **/minha-logo.png
