@@ -777,10 +777,10 @@
       .difference-pills{gap:5px}.difference-pills b{width:25px;height:18px;font-size:10px}
       .difference-rating{align-items:flex-start;flex-direction:column;gap:4px}.difference-rating b{font-size:14px}.difference-rating span{font-size:11px}
       .differences-process{height:auto;min-height:690px;padding:32px 22px 118px;border-radius:20px}
-      .differences-experience-badge{top:22px;right:20px;min-width:143px;height:55px;padding:0 11px;gap:8px}
+      .differences-experience-badge{position:relative;top:auto;right:auto;width:max-content;min-width:143px;height:55px;margin:18px auto 0;padding:0 11px;gap:8px}
       .differences-experience-badge svg{width:31px;height:31px}.differences-experience-badge strong{font-size:15px}.differences-experience-badge small{font-size:10px}
       .difference-step{grid-template-columns:48px minmax(0,1fr);gap:15px;padding:24px 0 22px}
-      .differences-process-line+.differences-experience-badge+.difference-step{padding-top:37px}
+      .differences-process-line+.differences-experience-badge+.difference-step{padding-top:26px}
       .difference-step-number{width:48px;height:48px;font-size:19px}
       .difference-step h3{font-size:17px}.difference-step p{font-size:14px;line-height:1.5}
       .differences-cta{left:22px;right:22px;bottom:51px;height:62px;padding:0 19px;gap:10px;font-size:15px}
@@ -1062,13 +1062,13 @@
     }
     #header.scrolled{background:rgba(5,5,5,.97);border-bottom-color:rgba(255,212,0,.32);backdrop-filter:blur(14px)}
     #header .nav{width:min(1472px,calc(100% - 48px));height:96px;gap:20px}
-    #header .brand{width:340px;height:96px;flex:0 0 340px;gap:15px;justify-content:flex-start}
-    #header .brand-logo{width:82px;height:82px;flex:0 0 82px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 1px rgba(255,212,0,.4),0 8px 28px rgba(0,0,0,.58)}
+    #header .brand{width:360px;height:96px;flex:0 0 360px;gap:16px;justify-content:flex-start}
+    #header .brand-logo{width:88px;height:88px;flex:0 0 88px;border-radius:50%;object-fit:cover;filter:contrast(1.08) saturate(1.06) drop-shadow(0 3px 8px rgba(0,0,0,.58));box-shadow:0 0 0 1px rgba(255,212,0,.5),0 8px 28px rgba(0,0,0,.58)}
     #header .brand:hover .brand-logo{box-shadow:0 0 0 2px rgba(255,212,0,.62),0 10px 30px rgba(0,0,0,.64)}
     .brand-copy{display:grid;align-content:center;min-width:0;font-family:Montserrat,sans-serif;line-height:.98;color:#fff}
-    .brand-copy>span{font-size:22px;font-weight:800;letter-spacing:-.6px}
-    .brand-copy>strong{margin-top:3px;color:#ffd400;font-size:25px;font-weight:900;letter-spacing:-.8px}
-    .brand-copy>small{margin-top:8px;color:#c8c8ce;font-family:Manrope,sans-serif;font-size:11px;font-weight:600;line-height:1;letter-spacing:.05px}
+    .brand-copy>span{font-size:23px;font-weight:900;letter-spacing:-.6px;text-shadow:0 1px 8px rgba(255,255,255,.08)}
+    .brand-copy>strong{margin-top:3px;color:#ffd400;font-size:27px;font-weight:900;letter-spacing:-.8px;text-shadow:0 0 12px rgba(255,212,0,.12)}
+    .brand-copy>small{margin-top:8px;color:#eeeef2;font-family:Manrope,sans-serif;font-size:11.5px;font-weight:700;line-height:1;letter-spacing:.05px}
     #header .menu{gap:36px;color:#fff;font-size:14px;font-weight:800}
     #header .menu a{color:#fff}
     #header .menu a:after{bottom:-15px;background:#ffd400}
@@ -1096,12 +1096,31 @@
         radial-gradient(circle at 96% 42%,rgba(22,112,210,.1),transparent 30%),
         linear-gradient(135deg,#050505 0%,#090909 58%,#0d0d0f 100%);
     }
+    .hero-facade-bg{
+      position:absolute;
+      inset:0;
+      z-index:0;
+      overflow:hidden;
+      background:url("../assets/google-perfil-fachada-unidade-com-moto.jpg") center 51%/cover no-repeat;
+      opacity:.45;
+      filter:saturate(.68) contrast(.9) brightness(.72);
+      pointer-events:none;
+    }
+    .hero-facade-bg:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg,rgba(0,0,0,.6) 0%,rgba(0,0,0,.5) 34%,rgba(0,0,0,.34) 56%,rgba(0,0,0,.52) 100%),
+        linear-gradient(180deg,rgba(0,0,0,.38) 0%,rgba(0,0,0,.1) 42%,rgba(0,0,0,.48) 100%);
+    }
     .hero:before{
       inset:96px 0 0;
+      z-index:1;
       background:
         radial-gradient(ellipse 430px 370px at 72% 34%,rgba(255,212,0,.16),transparent 68%),
         radial-gradient(ellipse 410px 330px at 89% 43%,rgba(22,112,210,.12),transparent 70%),
-        linear-gradient(90deg,rgba(5,5,5,.96) 0%,rgba(5,5,5,.72) 42%,rgba(5,5,5,.08) 72%,rgba(5,5,5,.36) 100%);
+        linear-gradient(90deg,rgba(5,5,5,.58) 0%,rgba(5,5,5,.38) 42%,rgba(5,5,5,.06) 72%,rgba(5,5,5,.3) 100%);
     }
     .hero:after{height:1px;background:#ffd400}
     .hero .hero-grid{width:min(1472px,calc(100% - 48px));grid-template-columns:minmax(0,48%) minmax(0,52%);align-items:start;gap:0}
@@ -1166,8 +1185,9 @@
     .mobile-cta{display:none!important}
 
     @media(max-width:1500px) and (min-width:1221px){
-      #header .brand{width:310px;flex-basis:310px}
-      #header .brand-logo{width:78px;height:78px;flex-basis:78px}
+      #header .brand{width:320px;flex-basis:320px}
+      #header .brand-logo{width:80px;height:80px;flex-basis:80px}
+      .brand-copy>span{font-size:20px}.brand-copy>strong{font-size:23px}.brand-copy>small{font-size:10.5px}
       #header .menu{gap:27px;font-size:13px}
       #header .nav-actions .btn{min-width:225px;padding-inline:20px}
       .hero h1{font-size:clamp(64px,4.8vw,72px)}
@@ -1217,6 +1237,8 @@
       #header .nav-actions .btn{height:50px;min-width:205px;font-size:14px}
       #header .mobile-menu-toggle{order:3}
       .hero{min-height:0;padding:110px 0 48px;scroll-margin-top:74px}
+      .hero-facade-bg{background-position:45% center;opacity:.32}
+      .hero-facade-bg:after{background:linear-gradient(180deg,rgba(0,0,0,.72) 0%,rgba(0,0,0,.54) 45%,rgba(0,0,0,.78) 100%)}
       .hero:before{inset:74px 0 0}
       .hero .hero-grid{display:grid;grid-template-columns:1fr;gap:38px}
       .hero-copy{max-width:760px}
@@ -1253,6 +1275,8 @@
       #header .mobile-menu-toggle{margin-left:auto}
       .brand-copy>span{font-size:15px}.brand-copy>strong{font-size:17px}.brand-copy>small{display:block;font-size:7.8px}
       .hero{padding:99px 0 42px;scroll-margin-top:70px}
+      .hero-facade-bg{background-position:43% top;opacity:.24}
+      .hero-facade-bg:after{background:linear-gradient(180deg,rgba(0,0,0,.76) 0%,rgba(0,0,0,.62) 34%,rgba(0,0,0,.88) 72%,rgba(0,0,0,.96) 100%)}
       .hero .hero-grid{width:calc(100% - 32px);gap:30px}
       .hero h1,.hero-copy>p,.hero-actions,.hero-visual .scene{opacity:1!important;transform:none!important}
       .hero .eyebrow{height:38px;padding:0 13px;font-size:10px}
@@ -1405,7 +1429,7 @@
     }
 
     /* Nossa estrutura / veiculos */
-    @media(min-width:1025px) and (max-width:1180px){
+    @media(min-width:1101px) and (max-width:1180px){
       .reviews-approved-panel .structure-heading{grid-template-columns:minmax(0,1fr) 470px;gap:36px}
       .reviews-approved-panel .structure-intro h2{font-size:48px}
       .reviews-approved-panel .structure-intro>p{font-size:16px}
@@ -1424,7 +1448,7 @@
       .reviews-approved-panel .structure-cta svg{width:32px;height:32px}
     }
 
-    @media(max-width:1024px){
+    @media(max-width:1100px){
       .reviews-approved-panel{margin-top:62px;padding:50px 0 102px}
       .reviews-approved-panel .structure-heading{grid-template-columns:1fr;gap:30px}
       .reviews-approved-panel .structure-intro h2{font-size:clamp(48px,7vw,58px)}
@@ -1634,6 +1658,7 @@
       .cta-band .container{width:calc(100% - 40px);max-width:620px;margin-left:auto;margin-right:auto}
       .cta-box{width:100%;max-width:600px;margin-left:auto;margin-right:auto;grid-template-columns:1fr}
       .cta-whatsapp{margin-left:auto;margin-right:auto}
+      .cta-chat-art{justify-self:center;margin-left:auto;margin-right:auto}
 
       .footer-grid{width:100%;max-width:600px;margin-left:auto;margin-right:auto;grid-template-columns:1fr}
       .footer-grid>div:first-child,
