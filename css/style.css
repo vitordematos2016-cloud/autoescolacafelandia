@@ -398,7 +398,7 @@
     .reviews-all-link{position:relative;width:max-content;margin:25px auto 0;padding:0 0 10px;display:flex;align-items:center;gap:22px;color:var(--feedback-yellow);font-size:15px;font-weight:850}
     .reviews-all-link:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:99px;background:var(--feedback-blue)}
     .reviews-all-link:hover{color:#fff}
-    .reviews-approved-panel{--structure-yellow:#ffd400;--structure-yellow-light:#ffe44d;--structure-blue:#0877e8;--structure-blue-deep:#0757b7;--structure-muted:#c8c8ce;position:relative;isolation:isolate;margin-top:78px;padding:58px 0 95px;border-top:1px solid rgba(255,255,255,.1)}
+    .reviews-approved-panel{--structure-yellow:#ffd400;--structure-yellow-light:#ffe44d;--structure-blue:#0877e8;--structure-blue-deep:#0757b7;--structure-muted:#c8c8ce;position:relative;isolation:isolate;margin-top:78px;padding:58px 0 95px;border-top:1px solid rgba(255,255,255,.1);scroll-margin-top:96px}
     .reviews-approved-panel:before{content:"";position:absolute;z-index:-2;top:0;bottom:0;left:50%;width:100vw;transform:translateX(-50%);background:radial-gradient(ellipse 520px 290px at 88% 18%,rgba(8,119,232,.14),transparent 72%),radial-gradient(ellipse 370px 220px at 58% 11%,rgba(255,212,0,.055),transparent 72%),#050505}
     .structure-road{position:absolute;z-index:-1;left:50%;bottom:-14px;width:1100px;max-width:none;transform:translateX(-72%);pointer-events:none;opacity:.9;filter:drop-shadow(0 0 12px rgba(8,119,232,.14))}
     .structure-heading{display:grid;grid-template-columns:minmax(0,1fr) 565px;gap:68px;align-items:end}
@@ -425,16 +425,18 @@
     .vehicle-card:hover{box-shadow:-6px 0 24px rgba(255,212,0,.08),6px 5px 27px rgba(8,119,232,.12),0 18px 38px rgba(0,0,0,.42)}
     .vehicle-card:hover img{transform:scale(1.025)}
     .vehicle-card-a:hover img,.vehicle-card-c:hover img,.vehicle-card-d:hover img{transform:scale(1.465)}
+    .vehicle-card-featured img{object-fit:contain;object-position:center;transform:none}
+    .vehicle-card-featured:hover img{transform:scale(1.015)}
     .vehicle-card:after{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(2,4,7,.12) 55%,rgba(2,4,7,.94) 100%);pointer-events:none}
     .vehicle-caption{position:absolute;z-index:2;left:19px;right:17px;bottom:13px;display:flex;align-items:center;gap:13px}
-    .vehicle-card-d .vehicle-caption{left:23px;bottom:18px;gap:15px}
+    .vehicle-card-featured .vehicle-caption{left:23px;bottom:18px;gap:15px}
     .vehicle-icon{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;border:2px solid var(--structure-yellow);border-radius:50%;background:rgba(5,7,9,.88);color:var(--structure-yellow);box-shadow:2px 2px 0 rgba(8,119,232,.8)}
     .vehicle-icon svg{width:33px;height:33px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-    .vehicle-card-d .vehicle-icon{width:61px;height:61px;flex-basis:61px}.vehicle-card-d .vehicle-icon svg{width:37px;height:37px}
+    .vehicle-card-featured .vehicle-icon{width:61px;height:61px;flex-basis:61px}.vehicle-card-featured .vehicle-icon svg{width:37px;height:37px}
     .vehicle-caption>span:last-child{display:flex;min-width:0;flex-direction:column}
     .vehicle-caption strong{color:var(--structure-yellow);font-size:13px;font-weight:900;line-height:1.2}
     .vehicle-caption small{margin-top:4px;color:#fff;font-size:12px;line-height:1.28}
-    .vehicle-card-d .vehicle-caption strong{font-size:15px}.vehicle-card-d .vehicle-caption small{font-size:14px}
+    .vehicle-card-featured .vehicle-caption strong{font-size:15px}.vehicle-card-featured .vehicle-caption small{font-size:14px}
     .structure-strip{position:relative;z-index:2;min-height:112px;margin-top:18px;padding:17px 18px 17px 22px;display:grid;grid-template-columns:minmax(0,1fr) 245px 295px;gap:20px;align-items:center;border:1px solid rgba(8,119,232,.32);border-radius:16px;background:linear-gradient(145deg,rgba(9,12,16,.98),rgba(5,8,12,.98));box-shadow:0 17px 42px rgba(0,0,0,.35),0 0 27px rgba(8,119,232,.055)}
     .structure-category-list{min-width:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
     .structure-category{min-width:0;padding:2px 15px 0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
@@ -1063,8 +1065,8 @@
     #header.scrolled{background:rgba(5,5,5,.97);border-bottom-color:rgba(255,212,0,.32);backdrop-filter:blur(14px)}
     #header .nav{width:min(1472px,calc(100% - 48px));height:96px;gap:20px}
     #header .brand{width:360px;height:96px;flex:0 0 360px;gap:16px;justify-content:flex-start}
-    #header .brand-logo{width:88px;height:88px;flex:0 0 88px;border-radius:50%;object-fit:cover;filter:contrast(1.08) saturate(1.06) drop-shadow(0 3px 8px rgba(0,0,0,.58));box-shadow:0 0 0 1px rgba(255,212,0,.5),0 8px 28px rgba(0,0,0,.58)}
-    #header .brand:hover .brand-logo{box-shadow:0 0 0 2px rgba(255,212,0,.62),0 10px 30px rgba(0,0,0,.64)}
+    #header .brand-logo{width:88px;height:88px;flex:0 0 88px;border-radius:0;object-fit:contain;filter:contrast(1.08) saturate(1.06) drop-shadow(0 5px 10px rgba(0,0,0,.68));box-shadow:none}
+    #header .brand:hover .brand-logo{box-shadow:none;filter:contrast(1.08) saturate(1.08) drop-shadow(0 7px 13px rgba(0,0,0,.72))}
     .brand-copy{display:grid;align-content:center;min-width:0;font-family:Montserrat,sans-serif;line-height:.98;color:#fff}
     .brand-copy>span{font-size:23px;font-weight:900;letter-spacing:-.6px;text-shadow:0 1px 8px rgba(255,255,255,.08)}
     .brand-copy>strong{margin-top:3px;color:#ffd400;font-size:27px;font-weight:900;letter-spacing:-.8px;text-shadow:0 0 12px rgba(255,212,0,.12)}
@@ -1449,12 +1451,12 @@
     }
 
     @media(max-width:1100px){
-      .reviews-approved-panel{margin-top:62px;padding:50px 0 102px}
+      .reviews-approved-panel{margin-top:62px;padding:50px 0 102px;scroll-margin-top:74px}
       .reviews-approved-panel .structure-heading{grid-template-columns:1fr;gap:30px}
       .reviews-approved-panel .structure-intro h2{font-size:clamp(48px,7vw,58px)}
       .reviews-approved-panel .structure-summary{width:100%;min-height:136px}
       .reviews-approved-panel .structure-gallery{height:auto;grid-template-columns:1fr;gap:16px}
-      .reviews-approved-panel .vehicle-card-d{aspect-ratio:16/9}
+      .reviews-approved-panel .vehicle-card-featured{aspect-ratio:16/9}
       .reviews-approved-panel .vehicle-grid{grid-template-rows:none}
       .reviews-approved-panel .vehicle-grid .vehicle-card{aspect-ratio:16/9}
       .reviews-approved-panel .structure-strip{grid-template-columns:1fr 1fr;margin-top:16px;padding:19px;gap:18px}
@@ -1466,7 +1468,7 @@
     }
 
     @media(max-width:640px){
-      .reviews-approved-panel{margin-top:52px;padding:42px 0 112px}
+      .reviews-approved-panel{margin-top:52px;padding:42px 0 112px;scroll-margin-top:70px}
       .reviews-approved-panel .structure-heading{gap:24px}
       .reviews-approved-panel .structure-label{font-size:12px}
       .reviews-approved-panel .structure-label-line{width:49px;height:2px;margin-top:11px}
@@ -1481,13 +1483,13 @@
       .reviews-approved-panel .structure-summary-categories{min-height:0;padding:18px 0 0;border-top:1px solid rgba(255,255,255,.16);border-left:0}
       .reviews-approved-panel .structure-summary-categories span{font-size:12px}
       .reviews-approved-panel .structure-gallery{margin-top:18px}
-      .reviews-approved-panel .vehicle-card-d,.reviews-approved-panel .vehicle-grid .vehicle-card{aspect-ratio:16/10;border-radius:13px}
+      .reviews-approved-panel .vehicle-card-featured,.reviews-approved-panel .vehicle-grid .vehicle-card{aspect-ratio:16/10;border-radius:13px}
       .reviews-approved-panel .vehicle-grid{grid-template-columns:1fr;gap:14px}
-      .reviews-approved-panel .vehicle-caption,.reviews-approved-panel .vehicle-card-d .vehicle-caption{left:15px;right:13px;bottom:12px;gap:11px}
-      .reviews-approved-panel .vehicle-icon,.reviews-approved-panel .vehicle-card-d .vehicle-icon{width:48px;height:48px;flex-basis:48px}
-      .reviews-approved-panel .vehicle-icon svg,.reviews-approved-panel .vehicle-card-d .vehicle-icon svg{width:29px;height:29px}
-      .reviews-approved-panel .vehicle-caption strong,.reviews-approved-panel .vehicle-card-d .vehicle-caption strong{font-size:12px}
-      .reviews-approved-panel .vehicle-caption small,.reviews-approved-panel .vehicle-card-d .vehicle-caption small{font-size:11px}
+      .reviews-approved-panel .vehicle-caption,.reviews-approved-panel .vehicle-card-featured .vehicle-caption{left:15px;right:13px;bottom:12px;gap:11px}
+      .reviews-approved-panel .vehicle-icon,.reviews-approved-panel .vehicle-card-featured .vehicle-icon{width:48px;height:48px;flex-basis:48px}
+      .reviews-approved-panel .vehicle-icon svg,.reviews-approved-panel .vehicle-card-featured .vehicle-icon svg{width:29px;height:29px}
+      .reviews-approved-panel .vehicle-caption strong,.reviews-approved-panel .vehicle-card-featured .vehicle-caption strong{font-size:12px}
+      .reviews-approved-panel .vehicle-caption small,.reviews-approved-panel .vehicle-card-featured .vehicle-caption small{font-size:11px}
       .reviews-approved-panel .structure-strip{display:block;margin-top:15px;padding:17px 14px;border-radius:14px}
       .reviews-approved-panel .structure-category-list{padding-bottom:15px;grid-template-columns:repeat(5,minmax(0,1fr))}
       .reviews-approved-panel .structure-category{padding:0 6px;align-items:center}
@@ -1634,9 +1636,14 @@
       .reviews-approved-panel .structure-summary{width:100%;max-width:600px;margin-left:auto;margin-right:auto;grid-template-columns:1fr;text-align:center}
       .reviews-approved-panel .structure-summary-experience{justify-content:center}
       .reviews-approved-panel .structure-summary-categories{border-left:0;border-top:1px solid rgba(255,255,255,.16)}
-      .reviews-approved-panel .vehicle-grid{grid-template-columns:1fr}
-      .reviews-approved-panel .vehicle-card,
-      .reviews-approved-panel .vehicle-card img{max-width:100%;margin-left:auto;margin-right:auto}
+      .reviews-approved-panel .vehicle-grid{display:contents}
+      .reviews-approved-panel .vehicle-card-a{order:1}
+      .reviews-approved-panel .vehicle-card-b{order:2}
+      .reviews-approved-panel .vehicle-card-c{order:3}
+      .reviews-approved-panel .vehicle-card-d{order:4}
+      .reviews-approved-panel .vehicle-card-e{order:5}
+      .reviews-approved-panel .vehicle-card{width:100%;max-width:100%;margin:0}
+      .reviews-approved-panel .vehicle-card img{width:100%;max-width:none;margin:0}
       .reviews-approved-panel .structure-strip-message{text-align:center}
       .reviews-approved-panel .structure-cta{margin-left:auto;margin-right:auto}
 

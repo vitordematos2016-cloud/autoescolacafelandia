@@ -206,6 +206,7 @@ const reviewCards = reviewsTrack ? [...reviewsTrack.querySelectorAll('.review-ca
 const reviewIndicators = document.querySelector('.reviews-indicators');
 const reviewModal = document.querySelector('.review-modal');
 const reduceReviewMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const mobileReviewMode = window.matchMedia('(max-width: 640px)');
 let reviewIndex = 0;
 let reviewScrollFrame = null;
 let reviewLastTrigger = null;
@@ -307,7 +308,7 @@ const animateReviewLoop = time => {
   if (!reviewsTrack) return;
   const elapsed = Math.min(time - (reviewLoopLastTime || time), 40);
   const modalIsOpen = reviewModal && !reviewModal.hidden;
-  const canMove = !reduceReviewMotion && !reviewDragging && !modalIsOpen && !document.hidden && time >= reviewAutoPauseUntil && reviewLoopWidth;
+  const canMove = !mobileReviewMode.matches && !reduceReviewMotion && !reviewDragging && !modalIsOpen && !document.hidden && time >= reviewAutoPauseUntil && reviewLoopWidth;
 
   if (canMove) {
     reviewsTrack.scrollLeft += elapsed * .035;
@@ -402,6 +403,12 @@ if (reviewsTrack && reviewCards.length > 1) {
     measureReviewLoop();
     reviewLoopFrame = window.requestAnimationFrame(animateReviewLoop);
   });
+
+  window.setInterval(() => {
+    const modalIsOpen = reviewModal && !reviewModal.hidden;
+    const canAdvance = mobileReviewMode.matches && !reduceReviewMotion && !reviewDragging && !modalIsOpen && !document.hidden && performance.now() >= reviewAutoPauseUntil && reviewLoopWidth;
+    if (canAdvance) moveReviews(1);
+  }, 4200);
 }
 
 reviewsPrev?.addEventListener('click', () => moveReviews(-1));
@@ -439,6 +446,7 @@ const getTrackedSections = () => {
     { triggerId: 'diferenciais', navId: 'diferenciais' },
     { triggerId: 'reputacao', navId: 'avaliacoes' },
     { triggerId: 'avaliacoes', navId: 'avaliacoes' },
+    { triggerId: 'estrutura', navId: 'estrutura' },
     { triggerId: 'localizacao', navId: 'localizacao' },
     { triggerId: 'duvidas', navId: 'duvidas' },
     { triggerId: 'contato', navId: 'duvidas' }
@@ -471,7 +479,7 @@ const isPinnedTargetVisible = id => {
   const target = document.getElementById(id);
   if (!target) return false;
   const headerHeight = header?.offsetHeight || 0;
-  const navigationRegion = target.closest('section') || target;
+  const navigationRegion = target;
   const rect = navigationRegion.getBoundingClientRect();
   const probe = headerHeight + window.innerHeight * .32;
   return rect.top <= probe && rect.bottom > probe;
